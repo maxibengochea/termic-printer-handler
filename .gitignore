@@ -1,5 +1,5 @@
 .env
-.exe
-.js
+*.exe
+*.js
 __pycache__
 venv
