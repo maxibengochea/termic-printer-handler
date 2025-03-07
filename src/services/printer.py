@@ -4,7 +4,6 @@ import base64
 from enum import Enum
 from io import BytesIO
 from PIL import Image, ImageWin
-from src.utils import validate_field
 
 #comandos ESC/POS para estilar el texto
 class FontStyles(Enum):
@@ -27,42 +26,50 @@ def _build_escpos_cmds(styles: dict, text: str):
   escpos_cmds = b'\x1B\x40'  
 
   #configurar la alineacion
-  if 'alignment' in styles.keys():
-    alignment = styles['alignment']
-
-    if alignment == "right":
-      escpos_cmds += FontStyles.RIGHT_ALIGN.value
-
-    elif alignment == "center":
-      escpos_cmds += FontStyles.CENTER_ALIGN.value
-
-    elif alignment == "left":
-      escpos_cmds += FontStyles.LEFT_ALIGN.value
+  if styles.get('alignment', None) == "right":
+    escpos_cmds += FontStyles.RIGHT_ALIGN.value
+  
+  elif styles.get('alignment', None) == "left":
+    escpos_cmds += FontStyles.LEFT_ALIGN.value
+  
+  elif styles.get('alignment', None) == "center":
+    escpos_cmds += FontStyles.CENTER_ALIGN.value
 
   #estilar la negrita
-  if validate_field(styles, 'bold'):
+  if styles.get('bold', False) == True:
     escpos_cmds += FontStyles.BOLD.value
-      
+    
   else:
     escpos_cmds += FontStyles.NOT_BOLD.value
       
   #estilar el subrayado
-  if validate_field(styles, 'underlined'):
+  if styles.get('underlined', False) == True:
     escpos_cmds += FontStyles.UNDERLINED.value
 
   else:
     escpos_cmds += FontStyles.NOT_UNDERLINED.value
 
   #estilar la fuente
-  if validate_field(styles, 'font_a'):
+  if styles.get('fonSize', None) == 'fontA':
     escpos_cmds += FontStyles.FONT_A.value
       
-  elif validate_field(styles, 'font_b'):
+  elif styles.get('fonSize', None) == 'fontB':
     escpos_cmds += FontStyles.FONT_B.value
     
-  elif validate_field(styles, 'font_c'):
+  elif styles.get('fonSize', None) == 'fontC':
     escpos_cmds += FontStyles.FONT_C.value
 
+  #estilar el tamaño
+  if styles.get('doubleWidthHeight', False) == True:
+    escpos_cmds += FontStyles.DOUBLE_WIDTH_HEIGHT.value
+
+  elif styles.get('doubleWidth', False) == True:
+    escpos_cmds += FontStyles.DOUBLE_HEIGHT.value
+
+  elif styles.get('doubleHeight', False) == True:
+    escpos_cmds += FontStyles.DOUBLE_WIDTH.value
+
+  #codificar el texto
   return escpos_cmds + text.encode('utf-8') + b'\n' 
 
 class Printer:
