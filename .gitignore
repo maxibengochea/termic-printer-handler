@@ -1,5 +1,7 @@
 .env
-*.exe
-*.js
+XPrinter Driver Setup V7.77.exe
+HelperClass.js
 __pycache__
+openbox.py
+test.py
 venv
