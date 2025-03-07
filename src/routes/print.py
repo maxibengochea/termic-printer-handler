@@ -11,11 +11,11 @@ def print_text():
   
   try:
     #imprimir el texto
-    Printer.print_text(data['text'], printer_name=data['printer_name'], font_styles=data['font_styles'])
+    Printer.print_text(data['text'], printer_name=data['printerName'], styles=data['styles'])
 
     return jsonify({
       'ok': True,
-      'message': 'Text printed successfully' 
+      'message': 'Text printed successfully', 
     })
     
   except Exception as e:
@@ -31,7 +31,7 @@ def print_image():
   
   try:
     #imprimir la imagen
-    Printer.print_image(data['image'], printer_name=data['printer_name'])
+    Printer.print_image(data['image'], printer_name=data['printerName'])
 
     return jsonify({
       'ok': True,
@@ -43,4 +43,3 @@ def print_image():
       'ok': False,
       'message': str(e)
     })
-  
