@@ -1,5 +1,6 @@
 from flask import Blueprint
 from flask import request, jsonify
+from src.dto.print_text import PrintextDto
 from src.services.printer import Printer
 
 print_router = Blueprint('print', __name__, url_prefix='/print')
@@ -7,7 +8,7 @@ print_router = Blueprint('print', __name__, url_prefix='/print')
 @print_router.route('/text', methods=['POST'])
 def print_text():
   #capturar el body
-  data = request.get_json(silent=True)
+  data: PrintextDto = request.get_json(silent=True)
   
   try:
     #imprimir el texto
