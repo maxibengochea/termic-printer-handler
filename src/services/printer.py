@@ -1,12 +1,13 @@
+import base64
 import win32print
 import win32ui
-import base64
 from enum import Enum
 from io import BytesIO
 from PIL import Image, ImageWin
+from src.dto.font_styles import FontStylesDto
 
-#comandos ESC/POS para estilar el texto
-class FontStyles(Enum):
+#enum comandos ESC/POS para estilar el texto
+class FontStylesCmds(Enum):
   BOLD = b'\x1B\x45\x01'
   CENTER_ALIGN = b'\x1B\x61\x01'
   DOUBLE_HEIGHT = b'\x1D\x21\x01'
@@ -21,52 +22,53 @@ class FontStyles(Enum):
   RIGHT_ALIGN = b'\x1B\x61\x02'
   UNDERLINED = b'\x1B\x2D\x01'
 
-def _build_escpos_cmds(styles: dict, text: str):
+#construir los comandos ESC/POS
+def _build_escpos_cmds(styles: FontStylesDto, text: str):
   #comenzar código ESC/POS
   escpos_cmds = b'\x1B\x40'  
 
   #configurar la alineacion
   if 'alignment' in styles.keys():
     if styles['alignment'] == "right":
-      escpos_cmds += FontStyles.RIGHT_ALIGN.value
+      escpos_cmds += FontStylesCmds.RIGHT_ALIGN.value
   
     elif styles['alignment'] == "left":
-      escpos_cmds += FontStyles.LEFT_ALIGN.value
+      escpos_cmds += FontStylesCmds.LEFT_ALIGN.value
   
     elif styles['alignment'] == "center":
-      escpos_cmds += FontStyles.CENTER_ALIGN.value
+      escpos_cmds += FontStylesCmds.CENTER_ALIGN.value
   
   #estilar la fuente
   if 'fontType' in styles.keys():
     if styles['fontType'] == 'fontA':
-      escpos_cmds += FontStyles.FONT_A.value
+      escpos_cmds += FontStylesCmds.FONT_A.value
 
     elif styles['fontType'] == 'fontB':
-      escpos_cmds += FontStyles.FONT_B.value
+      escpos_cmds += FontStylesCmds.FONT_B.value
 
     elif styles['fontType'] == 'fontC':
-      escpos_cmds += FontStyles.FONT_C.value
+      escpos_cmds += FontStylesCmds.FONT_C.value
 
   #estilar el tamaño
   if 'fontSize' in styles.keys():
     if styles['fontSize'] == 'doubleWidthHeight':
-      escpos_cmds += FontStyles.DOUBLE_WIDTH_HEIGHT.value
+      escpos_cmds += FontStylesCmds.DOUBLE_WIDTH_HEIGHT.value
 
     elif styles['fontSize'] == 'doubleWidth':
-      escpos_cmds += FontStyles.DOUBLE_HEIGHT.value
+      escpos_cmds += FontStylesCmds.DOUBLE_HEIGHT.value
 
     elif styles['fontSize'] == 'doubleHeight':
-      escpos_cmds += FontStyles.DOUBLE_WIDTH.value
+      escpos_cmds += FontStylesCmds.DOUBLE_WIDTH.value
 
-  escpos_cmds += FontStyles.BOLD.value if 'bold' in styles.keys() and styles['alignment'] else FontStyles.NOT_BOLD.value #estilar la negrita
-  escpos_cmds += FontStyles.UNDERLINED.value if 'underlined' in styles.keys() and styles['underlined'] else FontStyles.NOT_UNDERLINED.value #estilar el subrayado
+  escpos_cmds += FontStylesCmds.BOLD.value if 'bold' in styles.keys() and styles['alignment'] == True else FontStylesCmds.NOT_BOLD.value #estilar la negrita
+  escpos_cmds += FontStylesCmds.UNDERLINED.value if 'underlined' in styles.keys() and styles['underlined'] == True else FontStylesCmds.NOT_UNDERLINED.value #estilar el subrayado
   
   #codificar el texto
   return escpos_cmds + text.encode('utf-8') + b'\n' 
 
 class Printer:
   @classmethod
-  def print_text(cls, text: str, printer_name='IMP1', styles: dict = {}):
+  def print_text(cls, text: str, printer_name='IMP1', styles: FontStylesDto = {}):
     comand = _build_escpos_cmds(styles, text)
 
     try:
