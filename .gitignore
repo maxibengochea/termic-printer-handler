@@ -2,6 +2,5 @@
 *.exe
 *.js
 __pycache__
-openbox.py
 test.py
 venv
