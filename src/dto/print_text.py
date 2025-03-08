@@ -1,9 +1,8 @@
-from src.dto.font_styles import FontStylesDto
+from src.types.font_styles import FontStylesType
 from typing import TypedDict
 
 #tipar el body de la petición de imprimir texto
-class PrintextDto(TypedDict):
+class PrintTextDto(TypedDict):
   text: str
   printerName: str
-  styles: dict
-  styles: FontStylesDto
+  styles: FontStylesType

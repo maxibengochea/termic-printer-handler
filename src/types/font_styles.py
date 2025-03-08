@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 #tipar los estilos de texto
-class FontStylesDto(TypedDict, total=False):
+class FontStylesType(TypedDict, total=False):
   alignment: str
   fontType: str
   fontSize: str

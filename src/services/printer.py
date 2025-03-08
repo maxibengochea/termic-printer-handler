@@ -4,7 +4,7 @@ import win32ui
 from enum import Enum
 from io import BytesIO
 from PIL import Image, ImageWin
-from src.dto.font_styles import FontStylesDto
+from src.types.font_styles import FontStylesType
 
 #enum comandos ESC/POS para estilar el texto
 class FontStylesCmds(Enum):
@@ -23,7 +23,7 @@ class FontStylesCmds(Enum):
   UNDERLINED = b'\x1B\x2D\x01'
 
 #construir los comandos ESC/POS
-def _build_escpos_cmds(styles: FontStylesDto, text: str):
+def _build_escpos_cmds(styles: FontStylesType, text: str):
   #comenzar código ESC/POS
   escpos_cmds = b'\x1B\x40'  
 
@@ -68,7 +68,7 @@ def _build_escpos_cmds(styles: FontStylesDto, text: str):
 
 class Printer:
   @classmethod
-  def print_text(cls, text: str, printer_name='IMP1', styles: FontStylesDto = {}):
+  def print_text(cls, text: str, printer_name='IMP1', styles: FontStylesType = {}):
     comand = _build_escpos_cmds(styles, text)
 
     try:
