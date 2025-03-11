@@ -1,47 +1,11 @@
 from flask import Blueprint
-from flask import request, jsonify
-from src.dto.print_text import PrintTextDto
-from src.dto.print_img import PrintImgDto
-from src.services.printer import Printer
+from flask import request
+from src.dto.print import PrintDto
+from src.services.printer import print_data
 
 print_router = Blueprint('print', __name__, url_prefix='/print')
 
-@print_router.route('/text', methods=['POST'])
-def print_text():
-  #capturar el body
-  data: PrintTextDto = request.get_json(silent=True)
-  
-  try:
-    #imprimir el texto
-    Printer.print_text(data['text'], printer_name=data['printerName'], styles=data['styles'])
-
-    return jsonify({
-      'ok': True,
-      'message': 'Text printed successfully', 
-    })
-    
-  except Exception as e:
-    return jsonify({
-      'ok': False,
-      'message': str(e)
-    })
-  
-@print_router.route('/image', methods=['POST'])
-def print_image():
-  #capturar el body
-  data: PrintImgDto = request.get_json(silent=True)
-  
-  try:
-    #imprimir la imagen
-    Printer.print_image(data['image'], printer_name=data['printerName'])
-
-    return jsonify({
-      'ok': True,
-      'message': 'Img printed successfully' 
-    })
-
-  except Exception as e:
-    return jsonify({
-      'ok': False,
-      'message': str(e)
-    })
+@print_router.route(methods=['POST'])
+def print():
+  data: PrintDto = request.get_json(silent=True)  #capturar el body 
+  return print_data(data) #imprimir el texto
