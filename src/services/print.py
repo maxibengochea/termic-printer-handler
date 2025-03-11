@@ -1,4 +1,5 @@
 import base64
+import time
 import win32print
 import win32ui
 from io import BytesIO
@@ -12,7 +13,7 @@ class Printer:
   @classmethod
   def print_text(cls, text: str, printer_name: str, styles: FontStylesType):
     #comandos a enviar a la impresora
-    cmds = CmdBuilder.build_text(text, styles)
+    cmds = CmdBuilder.build_text(styles, f'{text}\n')
 
     try:
       #configurar la impresora
@@ -93,12 +94,17 @@ class Printer:
       #cerrar la conexion
       win32print.EndDocPrinter(printer)
       win32print.ClosePrinter(printer)
+
+      return jsonify({
+        'ok': True,
+        'message': 'Opened drawer successfully', 
+      }), 200
       
     except Exception as e:
       return jsonify({
         'ok': False,
         'message': f'Error opening drawer: {e}'
-      }), 500
+      }), 400
     
 #imprimir en cola
 def print_data(data: PrintDto) -> tuple[Response, int]:
@@ -119,8 +125,14 @@ def print_data(data: PrintDto) -> tuple[Response, int]:
       if status_code != 200:
         return response, status_code
     
-    #abrir la caja
-    if data['openDrawer']:
-      Printer.open_drawer(printer_name)
+  #abrir la caja
+  if data['openDrawer']:
+    response, status_code = Printer.open_drawer(printer_name)
+
+    if status_code != 200:
+      return response, status_code
     
-    return response, status_code
+  return jsonify({
+      'ok': True,
+      'message': 'Successfully operation', 
+    }), 200
