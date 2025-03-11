@@ -1,6 +1,17 @@
+#varibles de entorno
 .env
-*.exe
+
+#archivos de prueba 
 *.js
+*test.py
+
+#cache de la app
 __pycache__
-test.py
+
+#archivos de despliegue
+build
+dist
+*.spec
+
+#entorno virtual
 venv
