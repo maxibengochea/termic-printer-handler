@@ -4,3 +4,4 @@ from typing import TypedDict, Literal
 class PrintImgType(TypedDict):
   type: Literal['img']
   image: str
+  alignment: Literal['left', 'center', 'right']

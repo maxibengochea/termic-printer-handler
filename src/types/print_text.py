@@ -2,9 +2,9 @@ from typing import TypedDict, Literal
 
 #tipar los estilos de texto
 class FontStylesType(TypedDict, total=False):
-  alignment: str
-  fontType: str
-  fontSize: str
+  alignment: Literal['left', 'center', 'right']
+  fontType: Literal['fontA', 'fontB', 'fontC']
+  fontSize: Literal['doubleWidth', 'doubleHeight', 'doubleWidthHeight']
   bold: bool
   underlined: bool
 

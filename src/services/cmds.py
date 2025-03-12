@@ -16,10 +16,8 @@ class EscPosCmds(Enum):
   FONT_C = b'\x1B\x4D\x02'
   GRAPHIC_MODE = b'\x1D\x76\x30\x00'
   LEFT_ALIGN = b'\x1B\x61\x00'
-  NOT_BOLD = b'\x1B\x45\x00'
-  NOT_BREAK_LINE = b'\x1B\x33\x00'
-  NOT_UNDERLINED = b'\x1B\x2D\x00'
   OPEN_DRAWER = b'\x1B\x70\x00\x19\xFA'
+  RESET = b'\x1B\x40'
   RIGHT_ALIGN = b'\x1B\x61\x02'
   UNDERLINED = b'\x1B\x2D\x01'
 
@@ -28,7 +26,7 @@ class CmdBuilder:
   @classmethod
   def build_text(cls, styles: FontStylesType, text: str):
     #comenzar código ESC/POS
-    escpos_cmds = b''  
+    escpos_cmds = EscPosCmds.RESET.value 
 
     #configurar la alineacion
     if 'alignment' in styles.keys():
@@ -62,20 +60,33 @@ class CmdBuilder:
 
       elif styles['fontSize'] == 'doubleHeight':
         escpos_cmds += EscPosCmds.DOUBLE_WIDTH.value
-
-    escpos_cmds += EscPosCmds.BOLD.value if 'bold' in styles.keys() else EscPosCmds.NOT_BOLD.value #estilar la negrita
-    escpos_cmds += EscPosCmds.UNDERLINED.value if 'underlined' in styles.keys() else EscPosCmds.NOT_UNDERLINED.value #estilar el subrayado
+  
+    escpos_cmds += EscPosCmds.BOLD.value if 'bold' in styles.keys() and styles['bold'] else b'' #estilar la negrita
+    escpos_cmds += EscPosCmds.UNDERLINED.value if 'underlined' in styles.keys() and styles['underlined'] else b'' #estilar el subrayado
     escpos_cmds += text.encode('utf-8') #codificar el texto
     return escpos_cmds
   
   #comando para abrir la caja
   @classmethod
-  def build_drawer(cls):
+  def build_open_drawer(cls):
     return EscPosCmds.OPEN_DRAWER.value
   
   #comando para imprimir una imagen
   @classmethod
-  def build_img(cls, img: str):
+  def build_img(cls, img: str, alignment: str):
+    #resetear la impresora
+    escpos_cmds = EscPosCmds.RESET.value
+
+    #configurar la alineacion de la imagen
+    if alignment == "right":
+      escpos_cmds += EscPosCmds.RIGHT_ALIGN.value
+
+    elif alignment == "left":
+      escpos_cmds += EscPosCmds.LEFT_ALIGN.value
+
+    else:
+      escpos_cmds += EscPosCmds.CENTER_ALIGN.value
+
     #decodificar Base64 a bytes
     image_data = base64.b64decode(img)
     image = Image.open(io.BytesIO(image_data))
@@ -88,7 +99,7 @@ class CmdBuilder:
     width_bytes = (width + 7) // 8  # 8 píxeles por byte
 
     #comando de inicio de impresión gráfica en modo más compatible
-    escpos_cmds = EscPosCmds.NOT_BREAK_LINE.value + EscPosCmds.GRAPHIC_MODE.value + bytes([
+    escpos_cmds += EscPosCmds.GRAPHIC_MODE.value + bytes([
         width_bytes, 0,  # Ancho en bytes
         height % 256, height // 256  # Alto en píxeles
     ])

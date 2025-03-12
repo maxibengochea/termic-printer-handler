@@ -1,7 +1,7 @@
 from flask import Blueprint
 from flask import request
+from src.controllers.print import print_data
 from src.dto.print import PrintDto
-from src.services.print import print_data
 
 print_router = Blueprint('print', __name__)
 
