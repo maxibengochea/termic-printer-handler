@@ -1,17 +1,16 @@
-import base64
-import time
 import win32print
-import win32ui
-from io import BytesIO
-from PIL import Image, ImageWin
-from flask import jsonify, Response
-from src.dto.print import PrintDto
 from src.services.cmds import CmdBuilder
 from src.types.print_text import FontStylesType
+from typing import TypedDict
+
+#tipar la respuesta del printer
+class ResponsePrinterType(TypedDict):
+  ok: bool
+  message: str
 
 class Printer:
   @classmethod
-  def print_text(cls, text: str, printer_name: str, styles: FontStylesType):
+  def print_text(cls, text: str, printer_name: str, styles: FontStylesType) -> ResponsePrinterType:
     #comandos a enviar a la impresora
     cmds = CmdBuilder.build_text(styles, f'{text}\n')
 
@@ -31,28 +30,25 @@ class Printer:
       win32print.EndDocPrinter(printer)
       win32print.ClosePrinter(printer)
 
-      return jsonify({
-        'ok': True,
-        'message': 'Printed successfully', 
-      }), 200
+      return { 'ok': True }
       
     except Exception as e:
-      return jsonify({
+      return {
         'ok': False,
         'message': f'Error printing text: {e}'
-      }), 400
+      }
     
   @classmethod
-  def print_image(cls, img: str, printer_name: str):
+  def print_image(cls, img: str, printer_name: str, alignment: str) -> ResponsePrinterType:
     try:
       #obtener los comandos para imprimir la imagen
-      cmds = CmdBuilder.build_img(img)
+      cmds = CmdBuilder.build_img(img, alignment)
 
     except Exception as e:
-      return jsonify({
+      return {
         'ok': False,
         'message': f'Error processing image: {e}'
-      }), 400
+      }
 
     try:
       #configurar la impresora
@@ -70,21 +66,18 @@ class Printer:
       win32print.EndDocPrinter(printer)
       win32print.ClosePrinter(printer)
 
-      return jsonify({
-        'ok': True,
-        'message': 'Printed successfully', 
-      }), 200
+      return { 'ok': True }
 
     except Exception as e:
-      return jsonify({
+      return {
         'ok': False,
         'message': f'Error printing image: {e}'
-      }), 400
+      }
   
   @classmethod
-  def open_drawer(cls, printer_name: str):
+  def open_drawer(cls, printer_name: str) -> ResponsePrinterType:
     #obtener el comando para abrir la caja
-    cmds = CmdBuilder.build_drawer()
+    cmds = CmdBuilder.build_open_drawer()
 
     try:
       printer = win32print.OpenPrinter(printer_name) #configurar la impresora
@@ -95,44 +88,11 @@ class Printer:
       win32print.EndDocPrinter(printer)
       win32print.ClosePrinter(printer)
 
-      return jsonify({
-        'ok': True,
-        'message': 'Opened drawer successfully', 
-      }), 200
+      return { 'ok': True }
       
     except Exception as e:
-      return jsonify({
+      return {
         'ok': False,
         'message': f'Error opening drawer: {e}'
-      }), 400
+      }
     
-#imprimir en cola
-def print_data(data: PrintDto) -> tuple[Response, int]:
-  #parseamos el nombre de la impresora
-  printer_name = data['printerName']
-
-  #impresion condicional
-  for element in data['content']:
-    if element['type'] == 'text':
-      response, status_code = Printer.print_text(element['text'], printer_name, element['styles'])
-
-      if status_code != 200:
-        return response, status_code
-      
-    elif element['type'] == 'img':
-      response, status_code = Printer.print_image(element['image'], printer_name)
-
-      if status_code != 200:
-        return response, status_code
-    
-  #abrir la caja
-  if data['openDrawer']:
-    response, status_code = Printer.open_drawer(printer_name)
-
-    if status_code != 200:
-      return response, status_code
-    
-  return jsonify({
-      'ok': True,
-      'message': 'Successfully operation', 
-    }), 200
