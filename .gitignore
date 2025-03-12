@@ -3,7 +3,7 @@
 
 #archivos de prueba 
 *.js
-*test.py
+*test.*
 
 #cache de la app
 __pycache__
