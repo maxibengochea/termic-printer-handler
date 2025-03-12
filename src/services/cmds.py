@@ -2,6 +2,7 @@ import base64
 import io
 from enum import Enum
 from PIL import Image
+from src.services.img_processor import base64_to_escpos_image
 from src.types.print_text import FontStylesType
 
 #comandos ESC/POS para estilar el texto
@@ -87,45 +88,13 @@ class CmdBuilder:
     else:
       escpos_cmds += EscPosCmds.CENTER_ALIGN.value
 
-    #decodificar Base64 a bytes
-    image_data = base64.b64decode(img)
-    image = Image.open(io.BytesIO(image_data))
+    #agregar el modo grafico
+    escpos_cmds += EscPosCmds.GRAPHIC_MODE.value 
 
-    #convertir la imagen a blanco y negro (modo "1-bit")
-    image = image.convert("1")
-
-    #ajustar dimensiones
-    width, height = image.size
-    width_bytes = (width + 7) // 8  # 8 píxeles por byte
-
-    #comando de inicio de impresión gráfica en modo más compatible
-    escpos_cmds += EscPosCmds.GRAPHIC_MODE.value + bytes([
-        width_bytes, 0,  # Ancho en bytes
-        height % 256, height // 256  # Alto en píxeles
-    ])
-
-    #convertir la imagen en bytes ESC/POS
-    pixels = image.load() #cargar la imagen pixel a pixel
-
-    #iterar sobre las filas de la imagen
-    for y in range(height):
-      row_data = bytearray()
-
-      #itera sobre los píxeles de cada fila, procesando 8 píxeles a la vez (un byte por 8 píxeles)
-      for x in range(0, width, 8):
-        byte = 0
-
-        for bit in range(8):
-          #comprime los 8 píxeles en un byte. Si el píxel es negro, establece un bit a 1. Si es blanco, lo deja en 0
-          if x + bit < width and pixels[x + bit, y] == 0:  # 0 = negro
-            byte |= (1 << (7 - bit))
-
-        #agregar el byte a los datos de la fila
-        row_data.append(byte)
-        
-      #agregar la fila procesada
-      escpos_cmds += bytes(row_data)
+    #decodificar base64 a bytes
+    #el segundo parametro depende de la impresora, el otro valor seria 576
+    img_data = base64_to_escpos_image(img, 384) 
 
     #comando de avance de línea
-    return escpos_cmds + b"\n"
+    return escpos_cmds + img_data + b'\n'
     
