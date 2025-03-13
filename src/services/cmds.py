@@ -1,7 +1,4 @@
-import base64
-import io
 from enum import Enum
-from PIL import Image
 from src.services.img_processor import base64_to_escpos_image
 from src.types.print_text import FontStylesType
 
